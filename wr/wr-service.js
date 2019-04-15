@@ -58,14 +58,14 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 
 		let response = {};
 
-		if ("entity$" in result) {
-			response.success = true;
-			response.msg = '';
-			response.data = result;
-		} else {
+		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
 			response.data = '';
+		} else {
+			response.success = true;
+			response.msg = '';
+			response.data = result;
 		}
 		respond(null, response);
 
@@ -126,7 +126,7 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 			case 'work': 
 				break;
 			case 'state': 
-				if (msg.args.body[state] != closed) {
+				if (msg.args.body["state"] != "closed") {
 					err = 'invalid value for parameter state (can only be closed)';
 					valid = false;
 				}
@@ -151,14 +151,14 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 
 		let response = {};
 
-		if ("entity$" in result) {
-			response.success = true;
-			response.msg = '';
-			response.data = result;
-		} else {
+		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
 			response.data = '';
+		} else {
+			response.success = true;
+			response.msg = '';
+			response.data = result;
 		}
 
 		respond(null, response);
