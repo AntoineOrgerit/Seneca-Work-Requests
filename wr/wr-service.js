@@ -126,7 +126,7 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 			case 'work': 
 				break;
 			case 'state': 
-				if (msg.args.body[state] != closed) {
+				if (msg.args.body['state'] != 'closed') {
 					err = 'invalid value for parameter state (can only be closed)';
 					valid = false;
 				}
