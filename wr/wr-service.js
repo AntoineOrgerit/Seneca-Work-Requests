@@ -48,6 +48,11 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 
 	entity.applicant = msg.args.body.applicant;
 	entity.work = msg.args.body.work;
+	if (msg.args.body.date != null) {
+		entity.date = msg.args.body.date;
+	} else {
+		entity.date = Date(Date.now()).toString;
+	}
 
 	wr_entity.create(entity, function(result) {
 
