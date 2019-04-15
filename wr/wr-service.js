@@ -1,4 +1,4 @@
-var seneca = require('seneca');
+var seneca = require('seneca')();
 var SenecaWeb = require('seneca-web');
 var Express = require('express');
 var BodyParser = require('body-parser');
