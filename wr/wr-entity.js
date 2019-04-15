@@ -3,7 +3,7 @@ var entities = require('seneca-entity');
 seneca.use(entities);
 
 var path = require('path');
-seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
+//seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
 
 exports.create = function(entity, _callback) {
 	entity.state = 'created';
@@ -75,7 +75,7 @@ exports.delete = function(id, _callback) {
 					if(err) {
 						_callback(err);
 					} else {
-						_callback(null);
+						_callback(existing_entity);
 					}
 				});
 			}

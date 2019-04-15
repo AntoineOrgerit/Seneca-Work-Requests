@@ -99,7 +99,7 @@ lab.experiment('work request app', () => {
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr is already closed');
     });
-/*
+
     lab.test('attempt to delete a closed wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.false();
@@ -130,21 +130,20 @@ lab.experiment('work request app', () => {
     lab.test('attempt to update a dummy wr', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/_______', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
     lab.test('attempt to update a wr w/o id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr id not provided');
+        expect(result.msg).to.be.equals('wr path not supported');
     });
 
     lab.test('attempt to delete a dummy wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/_______');
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
-*/
 
 });
 

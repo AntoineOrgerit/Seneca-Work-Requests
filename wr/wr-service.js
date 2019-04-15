@@ -30,6 +30,13 @@ var Routes = [{
 			DELETE: true,
 			name: '',
 			suffix: '/:id'
+		},
+		notSupported: {
+			GET: true,
+			POST: true,
+			PUT: true,
+			DELETE: true,
+			name: ''
 		}
 	}
 }];
@@ -74,6 +81,28 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 
 //Retrieve
 seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
+	
+	let errResponse, err, valid = true;
+	
+	if(msg.args.params.id === 'undefined'){
+		err = 'wr id is not provided';
+		valid = false;
+	}
+	
+	if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
+		err = 'invalid id';
+		valid = false;
+	}
+	
+	if (!valid) {
+		errResponse = {};
+		errResponse.success = false;
+		errResponse.msg = err;
+		errResponse.data = '';
+
+		respond(null, errResponse);
+		return;
+	}
 
 	wr_entity.get(msg.args.params.id, function(result) {
 
@@ -119,6 +148,11 @@ seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
 seneca.add('role:wr, cmd:update', function(msg, respond) {
 	
 	let errResponse, err, valid = true;
+	
+	if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
+		err = 'invalid id';
+		valid = false;
+	}
 
 	for (let elem in msg.args.body) {
 		switch (elem) {
@@ -169,24 +203,54 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 //Delete
 seneca.add('role:wr, cmd:delete', function(msg, respond) {
 	
-	wr_entity.delete(msg.args.params.id, function(result) {
+	let errResponse, err, valid = true;
+	
+	if(msg.args.params.id === 'undefined'){
+		err = 'wr id is not provided';
+		valid = false;
+	}
+	
+	if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
+		err = 'invalid id';
+		valid = false;
+	}
+	
+	if (!valid) {
+		errResponse = {};
+		errResponse.success = false;
+		errResponse.msg = err;
+		errResponse.data = '';
 
+		respond(null, errResponse);
+		return;
+	}
+	
+	wr_entity.delete(msg.args.params.id, function(result) {
+		
 		let response = {};
 
-		if(result === null){
-			response.success = true;
-			response.msg = '';
-			response.data = '';
-		} else {
+		if(typeof result === 'string' || result instanceof String){
 			response.success = false;
 			response.msg = result;
 			response.data = '';
+		} else {
+			response.success = true;
+			response.msg = '';
+			response.data = result;
 		}
 
 		respond(null, response);
 
 	});
 }); 
+
+seneca.add('role:wr, cmd:notSupported', function(msg, respond) {
+	let response = {};
+	response.success = false;
+	response.msg = 'wr path not supported';
+	response.data = '';
+	respond(null, response);
+});
 
 seneca.ready(() => {
   let app = seneca.export('web/context')();
