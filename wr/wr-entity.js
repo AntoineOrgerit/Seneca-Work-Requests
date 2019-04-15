@@ -1,7 +1,9 @@
 var seneca = require('seneca')();
 var entities = require('seneca-entity');
-
 seneca.use(entities);
+
+var path = require('path');
+seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
 
 exports.create = function(entity, _callback) {
 	entity.state = 'created';

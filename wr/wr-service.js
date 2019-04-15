@@ -12,6 +12,10 @@ var Routes = [{
 		    POST: true,
 		    name: ''
 		},
+		retrieveAll: {
+			GET: true,
+			name: ''
+		},
 		retrieve: {
 			GET: true,
 			name: '',
@@ -67,6 +71,27 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
 
 	wr_entity.get(msg.args.params.id, function(result) {
+
+		let response = {};
+
+		if (result instanceof Array) {
+			response.success = true;
+			response.msg = '';
+			response.data = result;
+		} else {
+			response.success = false;
+			response.msg = result
+			response.data = '';
+		}
+
+		respond(null, response);
+
+	});  
+});
+
+seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
+
+	wr_entity.get(undefined, function(result) {
 
 		let response = {};
 
