@@ -14,11 +14,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "code": "^5.2.4",
+    "express": "^4.16.4",
     "lab": "^18.0.2",
     "restify-clients": "^2.6.4",
     "seneca": "^3.8.4",
     "seneca-entity": "^3.3.0",
-    "seneca-repl": "^1.2.0"
+    "seneca-repl": "^1.2.0",
+    "seneca-web": "^2.2.1"
   }
 }
