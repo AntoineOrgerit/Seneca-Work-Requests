@@ -1,4 +1,4 @@
-var seneca = require('seneca')();
+var seneca = require('seneca');
 var SenecaWeb = require('seneca-web');
 var Express = require('express');
 var BodyParser = require('body-parser');
@@ -59,7 +59,7 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 			response.data = result;
 		} else {
 			response.success = false;
-			response.msg = result
+			response.msg = result;
 			response.data = '';
 		}
 		respond(null, response);
@@ -80,7 +80,7 @@ seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
 			response.data = result;
 		} else {
 			response.success = false;
-			response.msg = result
+			response.msg = result;
 			response.data = '';
 		}
 
@@ -113,6 +113,35 @@ seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
 //Update
 seneca.add('role:wr, cmd:update', function(msg, respond) {
 	
+	let errResponse, err, valid = true;
+
+	for (let elem in msg.args.body) {
+		switch (elem) {
+
+			case 'work': 
+				break;
+			case 'state': 
+				if (msg.args.body[state] != closed) {
+					err = 'invalid value for parameter state (can only be closed)';
+					valid = false;
+				}
+				break;
+			default: 
+				err = 'invalid parameter';
+				valid = false;
+		}
+	}
+
+	if (!valid) {
+		errResponse = {};
+		errResponse.success = false;
+		errResponse.msg = err;
+		errResponse.data = '';
+
+		respond(null, errResponse);
+		return;
+	}
+
 	wr_entity.update(msg.args.params.id, msg.args.body, function(result) {
 
 		let response = {};
@@ -123,14 +152,13 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 			response.data = result;
 		} else {
 			response.success = false;
-			response.msg = result
+			response.msg = result;
 			response.data = '';
 		}
 
 		respond(null, response);
 
 	});
-
 });
 
 //Delete
@@ -142,12 +170,12 @@ seneca.add('role:wr, cmd:delete', function(msg, respond) {
 
 		if(result === null){
 			response.success = true;
-			response.msg = ''
-			response.data = ''
+			response.msg = '';
+			response.data = '';
 		} else {
 			response.success = false;
 			response.msg = result;
-			response.data = ''
+			response.data = '';
 		}
 
 		respond(null, response);
@@ -156,6 +184,6 @@ seneca.add('role:wr, cmd:delete', function(msg, respond) {
 }); 
 
 seneca.ready(() => {
-  let app = seneca.export('web/context')()
-  app.listen(3000)
+  let app = seneca.export('web/context')();
+  app.listen(3000);
 });
