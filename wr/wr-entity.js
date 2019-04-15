@@ -2,10 +2,10 @@ var seneca = require('seneca')();
 var entities = require('seneca-entity');
 
 seneca.use(entities);
-var wr_entity = seneca.make$('wr_entity');
 
 exports.create = function(entity, _callback) {
 	entity.state = 'created';
+	var wr_entity = seneca.make$('wr_entity');
 	wr_entity.save$(entity, function(err, result){
 		if(err) {
 			_callback(err);
@@ -16,6 +16,7 @@ exports.create = function(entity, _callback) {
 };
 
 exports.get = function(id, _callback) {
+	var wr_entity = seneca.make$('wr_entity');
 	if(typeof id !== 'undefined'){
 		wr_entity.list$({id: id}, function(err, entity){
 			if(err) {
@@ -36,6 +37,7 @@ exports.get = function(id, _callback) {
 };
 
 exports.update = function(id, fields, _callback) {
+	var wr_entity = seneca.make$('wr_entity');
 	wr_entity.load$(id, function(err, existing_entity) {
 		if(err) {
 			_callback('wr not found');
@@ -59,6 +61,7 @@ exports.update = function(id, fields, _callback) {
 };
 
 exports.delete = function(id, _callback) {
+	var wr_entity = seneca.make$('wr_entity');
 	wr_entity.load$(id, function(err, existing_entity) {
 		if(err) {
 			_callback('wr not found');
