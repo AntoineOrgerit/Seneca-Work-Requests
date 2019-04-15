@@ -4,13 +4,16 @@ var entities = require('seneca-entity');
 seneca.use(entities);
 var wr_entity = seneca.make$('wr_entity');
 
-exports.create = function(entity) {
+exports.create = function(entity, _callback) {
+	console.log(entity);
 	entity.state = 'created';
 	wr_entity.save$(entity, function(err, result){
+		console.log(err);
+		console.log(result);
 		if(err) {
-			return err;
+			_callback(err);
 		} else {
-			return result;
+			_callback(result);
 		}
 	});
 };

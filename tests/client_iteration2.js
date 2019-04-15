@@ -72,7 +72,7 @@ lab.experiment('work request app', () => {
         paulWR = result.data;
     });
 
-
+/*
     lab.test('get w/ id', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.true();
@@ -145,7 +145,7 @@ lab.experiment('work request app', () => {
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr not found');
     });
-
+*/
 
 });
 

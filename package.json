@@ -2,8 +2,9 @@
   "name": "projet_seneca",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "start_ms.js",
   "scripts": {
+    "start": "node start_ms.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -13,8 +14,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@seneca/repl": "^1.4.0",
+    "code": "^5.2.4",
+    "lab": "^18.0.2",
+    "restify-clients": "^2.6.4",
     "seneca": "^3.8.4",
-    "seneca-entity": "^3.3.0"
+    "seneca-entity": "^3.3.0",
+    "seneca-repl": "^1.2.0"
   }
 }

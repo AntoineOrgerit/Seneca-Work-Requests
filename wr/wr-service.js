@@ -1,26 +1,28 @@
 var seneca = require('seneca')();
-var entity = require('wr-entity.js')();
+seneca.use('seneca-repl', {port: 1021});
+var wr_entity = require('./wr-entity');
+var jsonic = require('jsonic');
 
 // *** implementation of CRUD services ***
 
 //Create
 seneca.add('role:wr, cmd:create', function(receivedMsg, respond) {
-  let result = entity.create(receivedMsg);
-
-  let success, msg, data;
-
-  if ("entity$" in result) {
-    success = true;
-    msg = '';
-    data = result;
-  } else {
-    success = false;
-    msg = result
-    data = '';
-  }
-
-  respond(null, jsonic(success, msg, data));
-
+	let entity = {};
+	entity.applicant = receivedMsg.applicant;
+	entity.work = receivedMsg.work;
+	wr_entity.create(entity, function(result) {
+		let response = {};
+		if ("entity$" in result) {
+			response.success = true;
+			response.msg = '';
+			response.data = result;
+		} else {
+			response.success = false;
+			response.msg = result
+			response.data = '';
+		}
+		respond(null, response);
+	});
 });
 
 //Retrieve
