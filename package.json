@@ -1,0 +1,18 @@
+{
+  "name": "projet_seneca",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.univ-lr.fr/aorgerit/projet_seneca.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "seneca": "^3.8.4"
+  }
+}
