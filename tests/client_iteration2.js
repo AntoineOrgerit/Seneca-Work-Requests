@@ -39,7 +39,7 @@ function makePromiseRequest(request, route, arg) {
     });
 }
 
-lab.experiment('Work Request micro-service', () => {
+lab.experiment('Work Request application -', () => {
 	// testing creation
     lab.test('Creating a wr from Paul', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', paulWR);
@@ -158,6 +158,6 @@ lab.experiment('Work Request micro-service', () => {
 	lab.test('Deleting all wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr');
         expect(result.success).to.be.true();
-        expect(result.data).to.be.equals([paulWR]);
+        expect(result.data).to.be.equals([]);
     });
 });

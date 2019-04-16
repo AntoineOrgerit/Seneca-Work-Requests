@@ -3,10 +3,12 @@ const SenecaWeb = require('seneca-web');
 const Express = require('express');
 const BodyParser = require('body-parser');
 
+// importing services and routes
 const Routes = require('./routes');
 const WrService = require('./wr/wr-service');
 const StatsService = require('./stats/stats-service');
 
+// configuration for using Express
 var config = {
   options: { parseBody: false },
   routes: Routes,
@@ -14,6 +16,7 @@ var config = {
   adapter: require('seneca-web-adapter-express')
 };
 
+// launching app
 var seneca = Seneca()
 	.use(WrService)
 	.use(StatsService)
