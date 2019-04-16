@@ -85,7 +85,7 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_opened).to.be.equals(1);
         expect(result.data.global_stats_wr_closed).to.be.equals(0);
     });
-/*
+
     lab.test('get user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();
@@ -197,19 +197,19 @@ lab.experiment('work request app', () => {
     lab.test('attempt to update a dummy wr', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/_______', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
     lab.test('attempt to update a wr w/o id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr id not provided');
+        expect(result.msg).to.be.equals('wr path not supported');
     });
 
     lab.test('attempt to delete a dummy wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/_______');
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
     lab.test('create a wr from henri', async () => {
@@ -288,7 +288,7 @@ lab.experiment('work request app', () => {
             expect(result.data.global_stats_wr_opened).to.be.equals(0);
             expect(result.data.global_stats_wr_closed).to.be.equals(2);
     });
-
+/*
     lab.test('get user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();

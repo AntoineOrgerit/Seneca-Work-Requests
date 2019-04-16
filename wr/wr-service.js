@@ -67,7 +67,7 @@ module.exports = function WrService() {
 					response.success = true;
 					response.data = result;
 				} else {
-						response.success = false;
+					response.success = false;
 					response.msg = result;
 				}
 				respond(null, response);
@@ -89,7 +89,7 @@ module.exports = function WrService() {
 							err = 'invalid value for parameter state (can only be closed)';
 							valid = false;
 						} else {
-							action = msg.args.body['state'];
+							action = "close";
 						}
 						break;
 					default: 
@@ -118,6 +118,17 @@ module.exports = function WrService() {
 	seneca.add('role:wr, cmd:delete', function(msg, respond) {
 		if(msg.args.params.id === 'undefined') {
 			wr_entity.delete(undefined, function(result) {
+				for(var i in result){
+					seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, response){
+						if(err){
+							console.log(err);
+						} else {
+							if(response.success === false){
+								console.log(response.err);
+							}
+						}
+					});
+				}
 				sendArrayResult(result, respond);
 			}); 
 		} else {

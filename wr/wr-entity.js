@@ -6,7 +6,7 @@ seneca.use(entities);
 
 // storage in local json files for reuse
 const path = require('path');
-seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
+//seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
 
 // handling creation of an element in the storage
 exports.create = function(entity, _callback) {
@@ -73,16 +73,25 @@ exports.delete = function(id, _callback) {
 	var wr_entity = seneca.make$('wr_entity');
 	if(typeof id === 'undefined'){
 		wr_entity.list$(function(err, entities) {
+			console.log(err);
+			console.log(entities);
 			if(err) {
 				_callback(err);
 			} else {
-				wr_entity.remove$({all$: true}, function(err){
-					if(err) {
-						_callback(err);
-					} else {
-						_callback(entities);
+				let deleted = [];
+				for(var i in entities) {
+					if(entities[i].state !== 'closed') {
+						wr_entity.remove$(id, function(err, result){
+							if(err) {
+								_callback(err);
+								return;
+							} else {
+								deleted.push(result);
+							}
+						});
 					}
-				});
+				}
+				_callback(deleted);
 			}
 		});
 	} else {

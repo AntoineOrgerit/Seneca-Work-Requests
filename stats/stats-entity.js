@@ -20,9 +20,9 @@ exports.set = function(data, _callback) {
 					case 'create':
 						var entity = {};
 						entity.applicant = data.applicant;
-						entity.created = 1;
-						entity.opened = 1;
-						entity.closed = 0;
+						entity.stats_wr_created = 1;
+						entity.stats_wr_opened = 1;
+						entity.stats_wr_closed = 0;
 						stats_entity.save$(entity, function(err, result){
 							if(err) {
 								_callback(err);
@@ -38,8 +38,8 @@ exports.set = function(data, _callback) {
 				var entity = entities[0];
 				switch (data.action) {
 					case 'create': 
-						entity.created = entity.created + 1;
-						entity.opened = entity.opened + 1;
+						entity.stats_wr_created = entity.stats_wr_created + 1;
+						entity.stats_wr_opened = entity.stats_wr_opened + 1;
 						stats_entity.save$(entity, function(err, result){
 							if(err) {
 								_callback(err);
@@ -49,8 +49,7 @@ exports.set = function(data, _callback) {
 						});
 						break;
 					case 'delete':
-						entity.created = entity.created - 1;
-						entity.opened = entity.opened - 1;
+						entity.stats_wr_opened = entity.stats_wr_opened - 1;
 						stats_entity.save$(entity, function(err, result){
 							if(err) {
 								_callback(err);
@@ -60,8 +59,8 @@ exports.set = function(data, _callback) {
 						});
 						break;
 					case 'close': 
-						entity.opened = entity.opened - 1;
-						entity.closed = entity.closed - 1;
+						entity.stats_wr_opened = entity.stats_wr_opened - 1;
+						entity.stats_wr_closed = entity.stats_wr_closed + 1;
 						stats_entity.save$(entity, function(err, result){
 							if(err) {
 								_callback(err);
@@ -80,10 +79,8 @@ exports.set = function(data, _callback) {
 
 // handling retrieve of one applicant wr stats
 exports.get = function(applicant, _callback) {
-	console.log(applicant);
 	var stats_entity = seneca.make$('stats_entity');
-	if(typeof applicant !== 'undefined' || applicant === null) {
-		console.log("applicant here");
+	if(typeof applicant !== 'undefined') {
 		stats_entity.list$({applicant: applicant}, function(err, entities) {
 			if(err) {
 				_callback(err);
@@ -92,12 +89,20 @@ exports.get = function(applicant, _callback) {
 			}
 		});
 	} else {
-		console.log("applicant not here");
 		stats_entity.list$(function(err, entities) {
 			if(err) {
 				_callback(err);
 			} else {
-				_callback(entities);
+				let stats = {};
+				stats.global_stats_wr_created = 0;
+				stats.global_stats_wr_opened = 0;
+				stats.global_stats_wr_closed = 0;
+				for(var i in entities){
+					stats.global_stats_wr_created = stats.global_stats_wr_created + entities[i].stats_wr_created;
+					stats.global_stats_wr_opened = stats.global_stats_wr_opened + entities[i].stats_wr_opened;
+					stats.global_stats_wr_closed = stats.global_stats_wr_closed + entities[i].stats_wr_closed;
+				}
+				_callback(stats);
 			}
 		});
 	}
