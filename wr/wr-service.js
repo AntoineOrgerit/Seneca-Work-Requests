@@ -1,157 +1,40 @@
-const seneca = require('seneca')();
-const SenecaWeb = require('seneca-web');
-const Express = require('express');
-const BodyParser = require('body-parser');
-const wr_entity = require('./wr-entity');
-
-// routes used for the api
-const Routes = [{
-	pin: 'role:wr,cmd:*',
-	prefix : '/api/wr',
-	map: {
-		create: {
-		    POST: true,
-		    name: ''
-		},
-		retrieveAll: {
-			GET: true,
-			name: ''
-		},
-		retrieve: {
-			GET: true,
-			name: '',
-			suffix: '/:id'
-		},
-		update: {
-			PUT: true,
-			name: '',
-			suffix: '/:id'
-		},
-		delete: {
-			DELETE: true,
-			name: '',
-			suffix: '/:id'
-		},
-		// 'default redirection' for not supported routes
-		notSupported: {
-			GET: true,
-			POST: true,
-			PUT: true,
-			DELETE: true,
-			name: ''
-		}
-	}
-}];
-
-seneca.use(SenecaWeb, {
-  options: { parseBody: false },
-  routes: Routes,
-  context: Express().use(BodyParser.json()), 
-  adapter: require('seneca-web-adapter-express')
-});
-
-function sendUniqueResult(result, respond) {
-	let response = {};
-	if (typeof result === 'string' || result instanceof String) {
-		response.success = false;
-		response.msg = result;
-	} else {
-		response.success = true;
-		response.data = result;
-	}
-	respond(null, response);
-}
-
-function checkId(msg, respond, _callback) {
-	let err, valid = true;
-	if(msg.args.params.id === 'undefined'){
-		err = 'wr id is not provided';
-		valid = false;
-	}
-	if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
-		err = 'invalid id';
-		valid = false;
-	}
-	if (!valid) {
-		let errResponse = {};
-		errResponse.success = false;
-		errResponse.msg = err;
-		errResponse.data = '';
-		respond(null, errResponse);
-		return;
-	}
-	_callback();
-}
-
-// handling creation requests
-seneca.add('role:wr, cmd:create', function(msg, respond) {
-	let entity = {};
-	entity.applicant = msg.args.body.applicant;
-	entity.work = msg.args.body.work;
-	if (msg.args.body.date != null) {
-		entity.date = msg.args.body.date;
-	}
-
-	// calling wr entity manager
-	wr_entity.create(entity, function(result) {
-		sendUniqueResult(result, respond);
-	});
-});
-
-// handling retrieve requests with id
-seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
-	checkId(msg, respond, function() {
-		// calling wr entity manager
-		wr_entity.get(msg.args.params.id, function(result) {
-			let response = {};
-			if (result instanceof Array) {
-				response.success = true;
-				response.data = result;
-			} else {
-				response.success = false;
-				response.msg = result;
-			}
-			respond(null, response);
-		});  
-	});
-});
-
-// handling retrieve requests without id
-seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
-	// calling wr entity manager
-	wr_entity.get(undefined, function(result) {
+module.exports = function WrService() {
+	const seneca = this;
+	const wr_entity = require('./wr-entity');
+	
+	// used to send a unique result (i.e. a unique wr, not a set of wr)
+	function sendUniqueResult(result, action, respond) {
 		let response = {};
-		if (result instanceof Array) {
-			response.success = true;
-			response.data = result;
-		} else {
+		// checking if it is an error message or not
+		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
-		}
-		respond(null, response);
-	});  
-});
-
-// handling update requests
-seneca.add('role:wr, cmd:update', function(msg, respond) {
-	checkId(msg, respond, function() {
-		let err, valid = true;
-		for (let elem in msg.args.body) {
-			switch (elem) {
-				case 'work': 
-					break;
-				case 'state': 
-					if (msg.args.body['state'] != 'closed') {
-						err = 'invalid value for parameter state (can only be closed)';
-						valid = false;
+		} else {
+			response.success = true;
+			response.data = result;
+			if(action){
+				// updating stats
+				seneca.act({role: 'stats', cmd: 'set', action: action, applicant: result.applicant}, function(err, response){
+					if(err){
+						console.log(err);
+					} else {
+						if(response.success === false){
+							console.log(response.err);
+						}
 					}
-					break;
-				default: 
-					err = 'invalid parameter';
-					valid = false;
+				});
 			}
 		}
+		respond(null, response);
+	}
 
+	// used to check if a valid id has been given in the URL
+	function checkId(msg, respond, _callback) {
+		let err, valid = true;
+		if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
+			err = 'invalid id';
+			valid = false;
+		}
 		if (!valid) {
 			let errResponse = {};
 			errResponse.success = false;
@@ -160,35 +43,126 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 			respond(null, errResponse);
 			return;
 		}
+		_callback();
+	}
+
+	// handling creation requests
+	seneca.add('role:wr, cmd:create', function(msg, respond) {
+		let entity = {};
+		entity.applicant = msg.args.body.applicant;
+		entity.work = msg.args.body.work;
+		if (msg.args.body.date != null) {
+			entity.date = msg.args.body.date;
+		}
 
 		// calling wr entity manager
-		wr_entity.update(msg.args.params.id, msg.args.body, function(result) {
-			sendUniqueResult(result, respond);
+		wr_entity.create(entity, function(result) {
+			sendUniqueResult(result, 'create', respond);
 		});
 	});
-});
 
-// handling delete requests
-seneca.add('role:wr, cmd:delete', function(msg, respond) {
-	checkId(msg, respond, function() {
-		// calling wr entity manager
-		wr_entity.delete(msg.args.params.id, function(result) {
-			sendUniqueResult(result, respond);
+	// handling retrieve requests
+	seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
+		checkId(msg, respond, function() {
+			// calling wr entity manager
+			wr_entity.get(msg.args.params.id, function(result) {
+				let response = {};
+				if (result instanceof Array) {
+					response.success = true;
+					response.data = result;
+				} else {
+					response.success = false;
+					response.msg = result;
+				}
+				respond(null, response);
+			});  
 		});
 	});
-}); 
 
-// handling other requests
-seneca.add('role:wr, cmd:notSupported', function(msg, respond) {
-	let response = {};
-	response.success = false;
-	response.msg = 'wr path not supported';
-	response.data = '';
-	respond(null, response);
-});
+	// handling update requests
+	seneca.add('role:wr, cmd:update', function(msg, respond) {
+		checkId(msg, respond, function() {
+			// checking if the content to update is valid
+			let err, valid = true;
+			let action = null;
+			for (let elem in msg.args.body) {
+				switch (elem) {
+					case 'work': 
+						break;
+					case 'state': 
+						if (msg.args.body['state'] != 'closed') {
+							err = 'invalid value for parameter state (can only be closed)';
+							valid = false;
+						} else {
+							// used to update the stats
+							action = "close";
+						}
+						break;
+					default: 
+						err = 'invalid parameter';
+						valid = false;
+				}
+			}
+			if (!valid) {
+				let errResponse = {};
+				errResponse.success = false;
+				errResponse.msg = err;
+				errResponse.data = '';
+				respond(null, errResponse);
+				return;
+			}
 
-// exposing micro-service
-seneca.ready(() => {
-  let app = seneca.export('web/context')();
-  app.listen(3000);
-});
+			// calling wr entity manager
+			wr_entity.update(msg.args.params.id, msg.args.body, function(result) {
+				sendUniqueResult(result, action, respond);
+			});
+		});
+	});
+
+	// handling delete requests
+	seneca.add('role:wr, cmd:delete', function(msg, respond) {
+		// checking if we want to delete many or one wr
+		if(typeof msg.args.params.id === 'undefined') {
+			// calling wr entity manager
+			wr_entity.delete(undefined, function(result) {
+				let response = {};
+				// checking if the result is not an error message
+				if (typeof result === 'string' || result instanceof String) {
+					response.success = false;
+					response.msg = result;
+				} else {
+					response.success = true;
+					response.data = result;
+					for(var i in result){
+						// updating stats
+						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, response){
+							if(err){
+								console.log(err);
+							} else {
+								if(response.success === false){
+									console.log(response.err);
+								}
+							}
+						});
+					}
+				}
+				respond(null, response);
+			}); 
+		} else {
+			checkId(msg, respond, function() {
+				// calling wr entity manager
+				wr_entity.delete(msg.args.params.id, function(result) {
+					sendUniqueResult(result, "delete", respond);
+				});
+			});
+		}
+	}); 
+
+	// handling other requests
+	seneca.add('role:wr, cmd:notSupported', function(msg, respond) {
+		let response = {};
+		response.success = false;
+		response.msg = 'wr path not supported';
+		respond(null, response);
+	});
+}

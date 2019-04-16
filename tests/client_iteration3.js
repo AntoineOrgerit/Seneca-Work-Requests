@@ -4,8 +4,8 @@ const {expect} = require('code');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 
+// test client
 const Restify = require('restify-clients');
-
 const client = Restify.createJsonClient({
     url: 'http://localhost:3000'
 });
@@ -13,22 +13,23 @@ const client = Restify.createJsonClient({
 // test data...
 let paulWR = {
     applicant: "paul",
-    work: "PC update"
+    work: "PC update",
+	date: "25-04-2019"
 };
-
 let pierreWR = {
     applicant: "pierre",
-    work: "PC configuration"
+    work: "PC configuration",
+	date: "22-06-2019"
 };
-
 let henriWR = {
     applicant: "henry",
-    work: "Hard disk installation"
+    work: "Hard disk installation",
+	date: "13-12-2019"
 };
-
 let jacquesWR = {
     applicant: "jacques",
-    work: "PC installation"
+    work: "PC installation",
+	date: "16-10-2019"
 };
 
 // to make asynchronous calls
@@ -48,20 +49,9 @@ function makePromiseRequest(request, route, arg) {
     });
 }
 
-lab.experiment('work request app', () => {
-
-    // delay between each test (if necessary)
-    /*
-    lab.beforeEach(() => {
-
-        return new Promise( (resolve) => {
-            // Wait 50 ms
-            setTimeout( () => { resolve(); }, 50);
-        });
-    });
-    */
-
-    lab.test('create a wr from paul', async () => {
+lab.experiment('Work Request application -', () => {
+	// testing creation
+    lab.test('Creating a wr from Paul', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', paulWR);
         expect(result).to.not.be.null();
         expect(result.success).to.be.true();
@@ -72,13 +62,15 @@ lab.experiment('work request app', () => {
         paulWR = result.data;
     });
 
-    lab.test('get w/ id', async () => {
+	// testing retrieve of Paul
+    lab.test('Retrieving Paul with his id', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([paulWR]);
     });
 
-    lab.test('get global stats', async () => {
+	// testing retrieve of global stats
+    lab.test('Retrieving global stats', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(1);
@@ -86,7 +78,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('get user stats for ' + paulWR.applicant, async () => {
+	// testing retrieve of Paul stats
+    lab.test('Retrieving user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(paulWR.applicant);
@@ -95,7 +88,8 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('update work item', async () => {
+	// testing update of work item
+    lab.test('Updating Paul wr work', async () => {
         let newWorkItem = 'PC reinstall';
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"work": newWorkItem});
         expect(result.success).to.be.true();
@@ -103,14 +97,16 @@ lab.experiment('work request app', () => {
         expect(result.data).to.be.equals(paulWR);
     });
 
-    lab.test('update state (closing)', async () => {
+	// testing update of state
+    lab.test('Updating Paul wr state to "closed"', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"state": "closed"});
         expect(result.success).to.be.true();
         paulWR.state = 'closed';
         expect(result.data).to.be.equals(paulWR);
     });
 
-    lab.test('get global stats', async () => {
+	// testing updated stats
+    lab.test('Retrieving updated global stats', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(1);
@@ -118,7 +114,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('get user stats for ' + paulWR.applicant, async () => {
+	// testing Paul's updated stats
+    lab.test('Retrieving updated user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(paulWR.applicant);
@@ -127,26 +124,35 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('attempt to update a closed wr', async () => {
+	// testing updated of closed wr
+    lab.test('Trying to update Paul wr work after being closed', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"work": "PC reinstall"});
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr is already closed');
     });
 
-    lab.test('attempt to delete a closed wr', async () => {
+	// testing delete of closed wr
+    lab.test('Trying to delete Paul closed wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr is already closed');
     });
 
-    lab.test('create a wr from pierre', async () => {
+	// testing creation of Pierre
+    lab.test('Creating a wr from pierre', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', pierreWR);
         expect(result.success).to.be.true();
         expect(result.data).to.include(pierreWR);
         pierreWR = result.data;
     });
+	
+	// testing unique ids
+	lab.test('Checking different ids for Paul and Pierre', async () => {
+        expect(paulWR.id).to.not.be.equals(pierreWR.id);
+    });
 
-    lab.test('get global stats', async () => {
+	// testing updated global stats
+    lab.test('Retrieving updated global stats (new applicant)', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(2);
@@ -154,7 +160,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('get user stats for ' + pierreWR.applicant, async () => {
+	// testing Pierre stats
+    lab.test('Retrieving user stats for ' + pierreWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + pierreWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(pierreWR.applicant);
@@ -163,7 +170,8 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('get all WR (w/o id)', async () => {
+	// testing retrieve of all wr
+    lab.test('Retrieving all wr', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr');
         expect(result.success).to.be.true();
         // tests inclusion in both directions to determine equality
@@ -171,13 +179,15 @@ lab.experiment('work request app', () => {
         expect([paulWR, pierreWR]).to.include(result.data);
     });
 
-    lab.test('delete an opened wr', async () => {
+	// testing delete of opened wr
+    lab.test('Deleting Pierre opened wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/' + pierreWR.id);
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals(pierreWR);
     });
 
-    lab.test('get global stats', async () => {
+	// testing updated global stats
+    lab.test('Retrieving updated global stats', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(2);
@@ -185,7 +195,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('get user stats for ' + pierreWR.applicant, async () => {
+	// testing updated Pierre stats
+    lab.test('Retrieving updated user stats for ' + pierreWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + pierreWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(pierreWR.applicant);
@@ -194,32 +205,51 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('attempt to update a dummy wr', async () => {
+	// testing update with wrong id
+    lab.test('Trying to update with a dummy id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/_______', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
+	// testing update without id
     lab.test('attempt to update a wr w/o id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr id not provided');
+        expect(result.msg).to.be.equals('wr path not supported');
+    });
+	
+	// testing update with prohibited fields
+    lab.test('Trying to update pierre wr with a prohibited field', async () => {
+        const result = await makePromiseRequest(client.put, '/api/wr/' + pierreWR.id, {"foo": "bar"});
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('invalid parameter');
     });
 
-    lab.test('attempt to delete a dummy wr', async () => {
+    // testing update with prohibited state value
+    lab.test('Trying to update pierre wr state with a prohibited value', async () => {
+        const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"state": "bar"});
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('invalid value for parameter state (can only be closed)');
+    });
+
+	// testing delete with wrong id
+    lab.test('Trying to delete with a dummy wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/_______');
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
-    lab.test('create a wr from henri', async () => {
+	// testing wr creation from henri
+    lab.test('Creating a wr from henri', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', henriWR);
         expect(result.success).to.be.true();
         expect(result.data).to.include(henriWR);
         henriWR = result.data;
     });
 
-    lab.test('get global stats', async () => {
+	// testing updated global stats
+    lab.test('Retrieving updated global stats', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(3);
@@ -227,7 +257,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('get user stats for ' + henriWR.applicant, async () => {
+	// testing user stats for Henri
+    lab.test('Retrieving user stats for ' + henriWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + henriWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(henriWR.applicant);
@@ -236,21 +267,24 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('create a wr from jacques', async () => {
+	// testing wr creation from Jacques
+    lab.test('Creating a wr from jacques', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', jacquesWR);
         expect(result.success).to.be.true();
         expect(result.data).to.include(jacquesWR);
         jacquesWR = result.data;
     });
 
-    lab.test('update state (closing)', async () => {
+	// testing update of state
+    lab.test('Updating Jacques wr state to "closed"', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/' + jacquesWR.id, {"state": "closed"});
         expect(result.success).to.be.true();
         jacquesWR.state = 'closed';
         expect(result.data).to.be.equals(jacquesWR);
     });
 
-    lab.test('get global stats', async () => {
+	// testing updated global stats
+    lab.test('Retrieving updated global stats (closed wr)', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
         expect(result.success).to.be.true();
         expect(result.data.global_stats_wr_created).to.be.equals(4);
@@ -258,7 +292,8 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_closed).to.be.equals(2);
     });
 
-    lab.test('get user stats for ' + jacquesWR.applicant, async () => {
+	// testing Jacques's updated stats
+    lab.test('Retrieving updated user stats for ' + jacquesWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + jacquesWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(jacquesWR.applicant);
@@ -267,13 +302,15 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(1);
     });
 
-    // drop all work (not closed) requests
-    lab.test('delete all wr', async () => {
+    // testing drop of all unclosed wr
+    lab.test('Deleting all wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr');
         expect(result.success).to.be.true();
+		expect(result.data).to.be.equals([henriWR]);
     });
 
-    lab.test('get all wr (w/o id)', async () => {
+	// testing retrieve of all wr
+    lab.test('Retrieving all wr after deletion of unclosed ones', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr');
         expect(result.success).to.be.true();
         // only PaulWR and JacquesWR have not been deleted because there are closed
@@ -281,15 +318,17 @@ lab.experiment('work request app', () => {
         expect([paulWR, jacquesWR]).to.include(result.data);
     });
 
-    lab.test('get global stats after delete', async () => {
+	// testing updated global stats
+    lab.test('Retrieving updated global stats after deletion of unclosed wr', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats');
-            expect(result.success).to.be.true();
-            expect(result.data.global_stats_wr_created).to.be.equals(4);
-            expect(result.data.global_stats_wr_opened).to.be.equals(0);
-            expect(result.data.global_stats_wr_closed).to.be.equals(2);
+        expect(result.success).to.be.true();
+        expect(result.data.global_stats_wr_created).to.be.equals(4);
+        expect(result.data.global_stats_wr_opened).to.be.equals(0);
+        expect(result.data.global_stats_wr_closed).to.be.equals(2);
     });
 
-    lab.test('get user stats for ' + paulWR.applicant, async () => {
+	// testing Paul's updated stats
+    lab.test('Retrieving user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(paulWR.applicant);
@@ -298,7 +337,8 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(1);
     });
 
-    lab.test('get user stats for ' + pierreWR.applicant, async () => {
+	// testing Pierre's updated stats
+    lab.test('Retrieving user stats for ' + pierreWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + pierreWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(pierreWR.applicant);
@@ -307,7 +347,8 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('get user stats for ' + henriWR.applicant, async () => {
+	// testing Henri's updated stats
+    lab.test('Retrieving user stats for ' + henriWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + henriWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(henriWR.applicant);
@@ -316,7 +357,8 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_closed).to.be.equals(0);
     });
 
-    lab.test('get user stats for ' + jacquesWR.applicant, async () => {
+	// testing Jacques's updated stats
+    lab.test('Retrieving user stats for ' + jacquesWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + jacquesWR.applicant);
         expect(result.success).to.be.true();
         expect(result.data.applicant).to.be.equals(jacquesWR.applicant);

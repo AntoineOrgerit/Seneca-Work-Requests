@@ -39,7 +39,7 @@ function makePromiseRequest(request, route, arg) {
     });
 }
 
-lab.experiment('Work Request micro-service', () => {
+lab.experiment('Work Request application -', () => {
 	// testing creation
     lab.test('Creating a wr from Paul', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', paulWR);
@@ -133,6 +133,20 @@ lab.experiment('Work Request micro-service', () => {
         expect(result.msg).to.be.equals('wr path not supported');
     });
 
+    // testing update with prohibited fields
+    lab.test('Trying to update pierre wr with a prohibited field', async () => {
+        const result = await makePromiseRequest(client.put, '/api/wr/' + pierreWR.id, {"foo": "bar"});
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('invalid parameter');
+    });
+
+    // testing update with prohibited state value
+    lab.test('Trying to update pierre wr state with a prohibited value', async () => {
+        const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"state": "bar"});
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('invalid value for parameter state (can only be closed)');
+    });
+
 	// testing delete with wrong id
     lab.test('Trying to delete with a dummy id', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/_______');
@@ -141,9 +155,9 @@ lab.experiment('Work Request micro-service', () => {
     });
 	
 	// testing delete without id
-	lab.test('Trying to delete without id', async () => {
+	lab.test('Deleting all wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr');
-        expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr path not supported');
+        expect(result.success).to.be.true();
+        expect(result.data).to.be.equals([]);
     });
 });
