@@ -4,8 +4,8 @@ const {expect} = require('code');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 
+// test client
 const Restify = require('restify-clients');
-
 const client = Restify.createJsonClient({
     url: 'http://localhost:3000'
 });
@@ -13,22 +13,23 @@ const client = Restify.createJsonClient({
 // test data...
 let paulWR = {
     applicant: "paul",
-    work: "PC update"
+    work: "PC update",
+	date: "25-04-2019"
 };
-
 let pierreWR = {
     applicant: "pierre",
-    work: "PC configuration"
+    work: "PC configuration",
+	date: "22-06-2019"
 };
-
 let henriWR = {
     applicant: "henry",
-    work: "Hard disk installation"
+    work: "Hard disk installation",
+	date: "13-12-2019"
 };
-
 let jacquesWR = {
     applicant: "jacques",
-    work: "PC installation"
+    work: "PC installation",
+	date: "16-10-2019"
 };
 
 // to make asynchronous calls
