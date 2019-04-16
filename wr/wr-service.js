@@ -3,8 +3,10 @@ module.exports = function WrService() {
 	const wr_entity = require('./wr-entity');
 	const minisearch = require('minisearch');
 	
+	// used to send a unique result (i.e. a unique wr, not a set of wr)
 	function sendUniqueResult(result, action, respond) {
 		let response = {};
+		// checking if it is an error message or not
 		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
@@ -12,6 +14,7 @@ module.exports = function WrService() {
 			response.success = true;
 			response.data = result;
 			if(action){
+				// updating stats
 				seneca.act({role: 'stats', cmd: 'set', action: action, applicant: result.applicant}, function(err, response){
 					if(err){
 						console.log(err);
@@ -26,6 +29,7 @@ module.exports = function WrService() {
 		respond(null, response);
 	}
 
+	// used to check if a valid id has been given in the URL
 	function checkId(msg, respond, _callback) {
 		let err, valid = true;
 		if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
@@ -99,6 +103,7 @@ module.exports = function WrService() {
 	// handling update requests
 	seneca.add('role:wr, cmd:update', function(msg, respond) {
 		checkId(msg, respond, function() {
+			// checking if the content to update is valid
 			let err, valid = true;
 			let action = null;
 			for (let elem in msg.args.body) {
@@ -137,20 +142,32 @@ module.exports = function WrService() {
 
 	// handling delete requests
 	seneca.add('role:wr, cmd:delete', function(msg, respond) {
-		if(msg.args.params.id === 'undefined') {
+		// checking if we want to delete many or one wr
+		if(typeof msg.args.params.id === 'undefined') {
+			// calling wr entity manager
 			wr_entity.delete(undefined, function(result) {
-				for(var i in result){
-					seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, response){
-						if(err){
-							console.log(err);
-						} else {
-							if(response.success === false){
-								console.log(response.err);
+				let response = {};
+				// checking if the result is not an error message
+				if (typeof result === 'string' || result instanceof String) {
+					response.success = false;
+					response.msg = result;
+				} else {
+					response.success = true;
+					response.data = result;
+					for(var i in result){
+						// updating stats
+						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, response){
+							if(err){
+								console.log(err);
+							} else {
+								if(response.success === false){
+									console.log(response.err);
+								}
 							}
-						}
-					});
+						});
+					}
 				}
-				sendArrayResult(result, respond);
+				respond(null, response);
 			}); 
 		} else {
 			checkId(msg, respond, function() {
