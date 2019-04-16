@@ -4,8 +4,8 @@ const {expect} = require('code');
 const Lab = require('lab');
 const lab = exports.lab = Lab.script();
 
+// test client
 const Restify = require('restify-clients');
-
 const client = Restify.createJsonClient({
     url: 'http://localhost:3000'
 });
@@ -13,25 +13,16 @@ const client = Restify.createJsonClient({
 // test data...
 let paulWR = {
     applicant: "paul",
-    work: "PC update"
+    work: "PC update",
+	date: "25-04-2019"
 };
-
 let pierreWR = {
     applicant: "pierre",
-    work: "PC configuration"
+    work: "PC configuration",
+	date: "22-06-2019"
 };
 
-let henriWR = {
-    applicant: "henry",
-    work: "Hard disk installation"
-};
-
-let jacquesWR = {
-    applicant: "jacques",
-    work: "PC installation"
-};
-
-// to make asynchronous calls
+// function used to make asynchronous calls
 function makePromiseRequest(request, route, arg) {
     var args = [route];
     var i = 1;
@@ -48,20 +39,9 @@ function makePromiseRequest(request, route, arg) {
     });
 }
 
-lab.experiment('work request app', () => {
-
-    // delay between each test (if necessary)
-    /*
-    lab.beforeEach(() => {
-
-        return new Promise( (resolve) => {
-            // Wait 50 ms
-            setTimeout( () => { resolve(); }, 50);
-        });
-    });
-    */
-
-    lab.test('create a wr from paul', async () => {
+lab.experiment('Work Request micro-service', () => {
+	// testing creation
+    lab.test('Creating a wr from Paul', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', paulWR);
         expect(result).to.not.be.null();
         expect(result.success).to.be.true();
@@ -72,15 +52,15 @@ lab.experiment('work request app', () => {
         paulWR = result.data;
     });
 
-
-    lab.test('get w/ id', async () => {
+	// testing retrieve of Paul
+    lab.test('Retrieving Paul with his id', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([paulWR]);
     });
 
-
-    lab.test('update work item', async () => {
+	// testing update of work item
+    lab.test('Updating Paul wr work', async () => {
         let newWorkItem = 'PC reinstall';
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"work": newWorkItem});
         expect(result.success).to.be.true();
@@ -88,33 +68,43 @@ lab.experiment('work request app', () => {
         expect(result.data).to.be.equals(paulWR);
     });
 
-    lab.test('update state (closing)', async () => {
+	// testing update of state
+    lab.test('Updating Paul wr state to "closed"', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"state": "closed"});
         expect(result.success).to.be.true();
         paulWR.state = 'closed';
         expect(result.data).to.be.equals(paulWR);
     });
 
-    lab.test('attempt to update a closed wr', async () => {
+	// testing update of closed wr
+    lab.test('Trying to update Paul wr work after being closed', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/' + paulWR.id, {"work": "PC reinstall"});
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr is already closed');
     });
-
-    lab.test('attempt to delete a closed wr', async () => {
+	
+	// testing delete of closed wr
+    lab.test('Trying to delete Paul closed wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/' + paulWR.id);
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('wr is already closed');
     });
 
-    lab.test('create a wr from pierre', async () => {
+	// testing creation of Pierre
+    lab.test('Creating a wr from pierre', async () => {
         const result = await makePromiseRequest(client.post, '/api/wr', pierreWR);
         expect(result.success).to.be.true();
         expect(result.data).to.include(pierreWR);
         pierreWR = result.data;
     });
+	
+	// testing unique ids
+	lab.test('Checking different ids for Paul and Pierre', async () => {
+        expect(paulWR.id).to.not.be.equals(pierreWR.id);
+    });
 
-    lab.test('get all WR (w/o id)', async () => {
+	// testing retrieve of all wr
+    lab.test('Retrieving all wr', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr');
         expect(result.success).to.be.true();
         // tests inclusion in both directions to determine equality
@@ -122,30 +112,38 @@ lab.experiment('work request app', () => {
         expect([paulWR, pierreWR]).to.include(result.data);
     });
 
-    lab.test('delete an opened wr', async () => {
+	// testing delete of opened wr
+    lab.test('Deleting Pierre opened wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/' + pierreWR.id);
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals(pierreWR);
     });
 
-    lab.test('attempt to update a dummy wr', async () => {
+	// testing update with wrong id
+    lab.test('Trying to update with a dummy id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr/_______', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
 
-    lab.test('attempt to update a wr w/o id', async () => {
+	// testing update without id
+    lab.test('Trying to update without id', async () => {
         const result = await makePromiseRequest(client.put, '/api/wr', {});
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr id not provided');
+        expect(result.msg).to.be.equals('wr path not supported');
     });
 
-    lab.test('attempt to delete a dummy wr', async () => {
+	// testing delete with wrong id
+    lab.test('Trying to delete with a dummy id', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr/_______');
         expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr not found');
+        expect(result.msg).to.be.equals('invalid id');
     });
-
-
+	
+	// testing delete without id
+	lab.test('Trying to delete without id', async () => {
+        const result = await makePromiseRequest(client.del, '/api/wr');
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('wr path not supported');
+    });
 });
-
