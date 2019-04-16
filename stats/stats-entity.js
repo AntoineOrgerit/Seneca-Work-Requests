@@ -80,12 +80,25 @@ exports.set = function(data, _callback) {
 
 // handling retrieve of one applicant wr stats
 exports.get = function(applicant, _callback) {
+	console.log(applicant);
 	var stats_entity = seneca.make$('stats_entity');
-	stats_entity.list$({applicant: applicant}, function(err, entities) {
-		if(err) {
-			_callback(err);
-		} else {
-			_callback(entities[0]);
-		}
-	});
+	if(typeof applicant !== 'undefined' || applicant === null) {
+		console.log("applicant here");
+		stats_entity.list$({applicant: applicant}, function(err, entities) {
+			if(err) {
+				_callback(err);
+			} else {
+				_callback(entities[0]);
+			}
+		});
+	} else {
+		console.log("applicant not here");
+		stats_entity.list$(function(err, entities) {
+			if(err) {
+				_callback(err);
+			} else {
+				_callback(entities);
+			}
+		});
+	}
 };

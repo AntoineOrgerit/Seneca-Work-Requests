@@ -85,7 +85,7 @@ lab.experiment('work request app', () => {
         expect(result.data.global_stats_wr_opened).to.be.equals(1);
         expect(result.data.global_stats_wr_closed).to.be.equals(0);
     });
-
+/*
     lab.test('get user stats for ' + paulWR.applicant, async () => {
         const result = await makePromiseRequest(client.get, '/api/wr/stats/' + paulWR.applicant);
         expect(result.success).to.be.true();
@@ -324,6 +324,6 @@ lab.experiment('work request app', () => {
         expect(result.data.stats_wr_opened).to.be.equals(0);
         expect(result.data.stats_wr_closed).to.be.equals(1);
     });
-
+*/
 });
 
