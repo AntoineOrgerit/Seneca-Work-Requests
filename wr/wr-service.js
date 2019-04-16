@@ -1,10 +1,11 @@
-var seneca = require('seneca')();
-var SenecaWeb = require('seneca-web');
-var Express = require('express');
-var BodyParser = require('body-parser');
-var wr_entity = require('./wr-entity');
+const seneca = require('seneca')();
+const SenecaWeb = require('seneca-web');
+const Express = require('express');
+const BodyParser = require('body-parser');
+const wr_entity = require('./wr-entity');
 
-var Routes = [{
+// routes used for the api
+const Routes = [{
 	pin: 'role:wr,cmd:*',
 	prefix : '/api/wr',
 	map: {
@@ -31,6 +32,7 @@ var Routes = [{
 			name: '',
 			suffix: '/:id'
 		},
+		// 'default redirection' for not supported routes
 		notSupported: {
 			GET: true,
 			POST: true,
@@ -48,42 +50,34 @@ seneca.use(SenecaWeb, {
   adapter: require('seneca-web-adapter-express')
 });
 
-//Create
+// handling creation requests
 seneca.add('role:wr, cmd:create', function(msg, respond) {
-
 	let entity = {};
-
 	entity.applicant = msg.args.body.applicant;
 	entity.work = msg.args.body.work;
 	if (msg.args.body.date != null) {
 		entity.date = msg.args.body.date;
-	} else {
-		entity.date = Date(Date.now()).toString;
 	}
 
+	// calling wr entity manager
 	wr_entity.create(entity, function(result) {
-
 		let response = {};
-
 		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
-			response.data = '';
 		} else {
 			response.success = true;
-			response.msg = '';
 			response.data = result;
 		}
 		respond(null, response);
-
 	});
 });
 
-//Retrieve
+// handling retrieve requests with id
 seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
-	
-	let errResponse, err, valid = true;
-	
+	let err, valid = true;
+
+	// checking parameters
 	if(msg.args.params.id === 'undefined'){
 		err = 'wr id is not provided';
 		valid = false;
@@ -95,60 +89,49 @@ seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
 	}
 	
 	if (!valid) {
-		errResponse = {};
+		let errResponse = {};
 		errResponse.success = false;
 		errResponse.msg = err;
 		errResponse.data = '';
-
 		respond(null, errResponse);
 		return;
 	}
 
+	// calling wr entity manager
 	wr_entity.get(msg.args.params.id, function(result) {
-
 		let response = {};
-
 		if (result instanceof Array) {
 			response.success = true;
-			response.msg = '';
 			response.data = result;
 		} else {
 			response.success = false;
 			response.msg = result;
-			response.data = '';
 		}
-
 		respond(null, response);
-
 	});  
 });
 
+// handling retrieve requests without id
 seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
-
+	// calling wr entity manager
 	wr_entity.get(undefined, function(result) {
-
 		let response = {};
-
 		if (result instanceof Array) {
 			response.success = true;
-			response.msg = '';
 			response.data = result;
 		} else {
 			response.success = false;
-			response.msg = result
-			response.data = '';
+			response.msg = result;
 		}
-
 		respond(null, response);
-
 	});  
 });
 
-//Update
+// handling update requests
 seneca.add('role:wr, cmd:update', function(msg, respond) {
+	let err, valid = true;
 	
-	let errResponse, err, valid = true;
-	
+	// checking parameters
 	if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
 		err = 'invalid id';
 		valid = false;
@@ -156,7 +139,6 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 
 	for (let elem in msg.args.body) {
 		switch (elem) {
-
 			case 'work': 
 				break;
 			case 'state': 
@@ -172,39 +154,34 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 	}
 
 	if (!valid) {
-		errResponse = {};
+		let errResponse = {};
 		errResponse.success = false;
 		errResponse.msg = err;
 		errResponse.data = '';
-
 		respond(null, errResponse);
 		return;
 	}
 
+	// calling wr entity manager
 	wr_entity.update(msg.args.params.id, msg.args.body, function(result) {
-
 		let response = {};
-
 		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
-			response.data = '';
 		} else {
 			response.success = true;
-			response.msg = '';
 			response.data = result;
 		}
-
 		respond(null, response);
 
 	});
 });
 
-//Delete
+// handling delete requests
 seneca.add('role:wr, cmd:delete', function(msg, respond) {
+	let err, valid = true;
 	
-	let errResponse, err, valid = true;
-	
+	// checking parameters
 	if(msg.args.params.id === 'undefined'){
 		err = 'wr id is not provided';
 		valid = false;
@@ -216,34 +193,30 @@ seneca.add('role:wr, cmd:delete', function(msg, respond) {
 	}
 	
 	if (!valid) {
-		errResponse = {};
+		let errResponse = {};
 		errResponse.success = false;
 		errResponse.msg = err;
 		errResponse.data = '';
-
 		respond(null, errResponse);
 		return;
 	}
 	
+	// calling wr entity manager
 	wr_entity.delete(msg.args.params.id, function(result) {
-		
 		let response = {};
-
 		if(typeof result === 'string' || result instanceof String){
 			response.success = false;
 			response.msg = result;
-			response.data = '';
 		} else {
 			response.success = true;
-			response.msg = '';
 			response.data = result;
 		}
-
 		respond(null, response);
 
 	});
 }); 
 
+// handling other requests
 seneca.add('role:wr, cmd:notSupported', function(msg, respond) {
 	let response = {};
 	response.success = false;
@@ -252,6 +225,7 @@ seneca.add('role:wr, cmd:notSupported', function(msg, respond) {
 	respond(null, response);
 });
 
+// exposing micro-service
 seneca.ready(() => {
   let app = seneca.export('web/context')();
   app.listen(3000);

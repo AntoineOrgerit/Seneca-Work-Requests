@@ -1,10 +1,15 @@
-var seneca = require('seneca')();
-var entities = require('seneca-entity');
+const seneca = require('seneca')();
+
+// required for storage
+const entities = require('seneca-entity');
 seneca.use(entities);
 
-var path = require('path');
-//seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
+// storage in local json files for reuse
+// to uncomment if required for usage
+/*const path = require('path');
+seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});*/
 
+// handling creation of an element in the storage
 exports.create = function(entity, _callback) {
 	entity.state = 'created';
 	var wr_entity = seneca.make$('wr_entity');
@@ -17,6 +22,7 @@ exports.create = function(entity, _callback) {
 	});
 };
 
+// handling retrieve of one or all element(s) from the storage
 exports.get = function(id, _callback) {
 	var wr_entity = seneca.make$('wr_entity');
 	if(typeof id !== 'undefined'){
@@ -38,6 +44,7 @@ exports.get = function(id, _callback) {
 	}
 };
 
+// handling update element of the storage
 exports.update = function(id, fields, _callback) {
 	var wr_entity = seneca.make$('wr_entity');
 	wr_entity.load$(id, function(err, existing_entity) {
@@ -62,6 +69,7 @@ exports.update = function(id, fields, _callback) {
 	});
 };
 
+// handling delete element from the storage
 exports.delete = function(id, _callback) {
 	var wr_entity = seneca.make$('wr_entity');
 	wr_entity.load$(id, function(err, existing_entity) {
@@ -82,4 +90,3 @@ exports.delete = function(id, _callback) {
 		}
 	});
 };
-
