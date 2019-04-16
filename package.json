@@ -18,6 +18,7 @@
     "code": "^5.2.4",
     "express": "^4.16.4",
     "lab": "^18.0.2",
+    "minisearch": "^1.2.1",
     "restify-clients": "^2.6.4",
     "seneca": "^3.8.4",
     "seneca-entity": "^3.3.0",
