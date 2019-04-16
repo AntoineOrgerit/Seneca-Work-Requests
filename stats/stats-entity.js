@@ -17,30 +17,29 @@ exports.set = function(data, _callback) {
 		if(err) {
 			_callback(err);
 		} else {
+			var entity;
 			// if the stats of the application do not exist, we create them if the 'create' action is sent
 			if(entities.length === 0) {
-				switch (data.action) {
-					case 'create':
-						var entity = {};
-						entity.applicant = data.applicant;
-						entity.stats_wr_created = 1;
-						entity.stats_wr_opened = 1;
-						entity.stats_wr_closed = 0;
-						// saving the applicant stats
-						stats_entity.save$(entity, function(err, result){
-							if(err) {
-								_callback(err);
-							} else {
-								_callback(result);
-							}
-						});
-						break;
-					default:
-						_callback('stats do not exists for this applicant');
+				if(data.action === 'create') {
+					entity = {};
+					entity.applicant = data.applicant;
+					entity.stats_wr_created = 1;
+					entity.stats_wr_opened = 1;
+					entity.stats_wr_closed = 0;
+					// saving the applicant stats
+					stats_entity.save$(entity, function(err, result){
+						if(err) {
+							_callback(err);
+						} else {
+							_callback(result);
+						}
+					});
+				} else {
+					_callback('stats do not exists for this applicant');
 				}
 			// if the stats of the applicant exist, we update them depending on the action
 			} else {
-				var entity = entities[0];
+				entity = entities[0];
 				switch (data.action) {
 					case 'create': 
 						entity.stats_wr_created = entity.stats_wr_created + 1;
