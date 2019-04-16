@@ -13,14 +13,10 @@ const Routes = [{
 		    POST: true,
 		    name: ''
 		},
-		retrieveAll: {
-			GET: true,
-			name: ''
-		},
 		retrieve: {
 			GET: true,
 			name: '',
-			suffix: '/:id'
+			suffix: '/:id?'
 		},
 		update: {
 			PUT: true,
@@ -30,7 +26,7 @@ const Routes = [{
 		delete: {
 			DELETE: true,
 			name: '',
-			suffix: '/:id'
+			suffix: '/:id?'
 		},
 		// 'default redirection' for not supported routes
 		notSupported: {
@@ -100,9 +96,8 @@ seneca.add('role:wr, cmd:create', function(msg, respond) {
 
 // handling retrieve requests with id
 seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
-	checkId(msg, respond, function() {
-		// calling wr entity manager
-		wr_entity.get(msg.args.params.id, function(result) {
+	if(msg.args.params.id === 'undefined') {
+		wr_entity.get(undefined, function(result) {
 			let response = {};
 			if (result instanceof Array) {
 				response.success = true;
@@ -112,24 +107,23 @@ seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
 				response.msg = result;
 			}
 			respond(null, response);
-		});  
-	});
-});
-
-// handling retrieve requests without id
-seneca.add('role:wr, cmd:retrieveAll', function(msg, respond) {
-	// calling wr entity manager
-	wr_entity.get(undefined, function(result) {
-		let response = {};
-		if (result instanceof Array) {
-			response.success = true;
-			response.data = result;
-		} else {
-			response.success = false;
-			response.msg = result;
-		}
-		respond(null, response);
-	});  
+		}); 
+	} else {
+		checkId(msg, respond, function() {
+			// calling wr entity manager
+			wr_entity.get(msg.args.params.id, function(result) {
+				let response = {};
+				if (result instanceof Array) {
+					response.success = true;
+					response.data = result;
+				} else {
+					response.success = false;
+					response.msg = result;
+				}
+				respond(null, response);
+			});  
+		});
+	}
 });
 
 // handling update requests
@@ -170,12 +164,18 @@ seneca.add('role:wr, cmd:update', function(msg, respond) {
 
 // handling delete requests
 seneca.add('role:wr, cmd:delete', function(msg, respond) {
-	checkId(msg, respond, function() {
-		// calling wr entity manager
-		wr_entity.delete(msg.args.params.id, function(result) {
-			sendUniqueResult(result, respond);
+	if(msg.args.params.id === 'undefined') {
+		wr_entity.delete(undefined, function(result) {
+			sendArrayResult(result, respond);
+		}); 
+	} else {
+		checkId(msg, respond, function() {
+			// calling wr entity manager
+			wr_entity.delete(msg.args.params.id, function(result) {
+				sendUniqueResult(result, respond);
+			});
 		});
-	});
+	}
 }); 
 
 // handling other requests

@@ -141,9 +141,9 @@ lab.experiment('Work Request micro-service', () => {
     });
 	
 	// testing delete without id
-	lab.test('Trying to delete without id', async () => {
+	lab.test('Deleting all wr', async () => {
         const result = await makePromiseRequest(client.del, '/api/wr');
-        expect(result.success).to.be.false();
-        expect(result.msg).to.be.equals('wr path not supported');
+        expect(result.success).to.be.true();
+        expect(result.data).to.be.equals([paulWR]);
     });
 });
