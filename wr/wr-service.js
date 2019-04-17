@@ -1,7 +1,6 @@
 module.exports = function WrService() {
 	const seneca = this;
 	const wr_entity = require('./wr-entity');
-	const minisearch = require('minisearch');
 	
 	// used to send a unique result (i.e. a unique wr, not a set of wr)
 	function sendUniqueResult(result, action, respond) {
@@ -72,6 +71,7 @@ module.exports = function WrService() {
 	// handling retrieve requests
 	seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
 		if (isJsonEmpty(msg.args.query)) {
+			// no query params means a regular retrieve command
 			checkId(msg, respond, function() {
 				// calling wr entity manager
 				wr_entity.get(msg.args.params.id, function(result) {
@@ -87,16 +87,33 @@ module.exports = function WrService() {
 				});  
 			});
 		} else {
+
+
+			// presence of query params, expecting a content-based search
+			let term = msg.args.query.search;
+			let response = {};
 			if(msg.args.query.hasOwnProperty('search')) {
-				let search = msg.args.query.search;
-				if(search === '')
-					console.log('Error : search param is empty');
-				else
-					console.log('searching for : ' + search);
+				if(term === '' ) {
+					response.success = false;
+					response.msg = 'search param is empty';
+					respond(null, response);
+				} else 
+					wr_entity.search(term, function(result) {
+						let response = {};
+						if (result instanceof Array) {
+							response.success = true;
+							response.data = result;
+						} else {
+							response.success = false;
+							response.msg = result;
+						}
+						respond(null, response);
+					});
 			} else {
-				console.log('Error : can only take "search" param');
+				response.success = false;
+				response.msg = 'can only take "search" param';
+				respond(null, response);
 			}
-			respond(null, {success:false});
 		}
 	});
 

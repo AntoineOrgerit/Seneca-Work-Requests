@@ -377,14 +377,25 @@ lab.experiment('Work Request application -', () => {
     lab.test('search w/ search term: ' + 'reinstall', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'reinstall');
         expect(result.success).to.be.true();
-        expect(result.data).to.equals([paulWR]);
+        expect(result.data).to.be.equals([paulWR]);
     });
 
     lab.test('search w/ search term: ' + 'installation', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'installation');
         expect(result.success).to.be.true();
-        expect(result.data).to.equals([jacquesWR]);
+        expect(result.data).to.be.equals([jacquesWR]);
     });
 
+    lab.test('search w/ invalid term', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?foo=' + 'bar');
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('can only take "search" param');
+    });
+
+    lab.test('search w/ empty search param', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?search=' + '');
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('search param is empty');
+    });
 });
 
