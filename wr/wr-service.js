@@ -46,6 +46,13 @@ module.exports = function WrService() {
 		_callback();
 	}
 
+	function isJsonEmpty(jsonObject) {
+		for (let key in jsonObject) 
+			if (jsonObject.hasOwnProperty(key))
+				return false;
+		return true;
+	}
+
 	// handling creation requests
 	seneca.add('role:wr, cmd:create', function(msg, respond) {
 		let entity = {};
@@ -63,20 +70,54 @@ module.exports = function WrService() {
 
 	// handling retrieve requests
 	seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
-		checkId(msg, respond, function() {
-			// calling wr entity manager
-			wr_entity.get(msg.args.params.id, function(result) {
-				let response = {};
-				if (result instanceof Array) {
-					response.success = true;
-					response.data = result;
+		if (isJsonEmpty(msg.args.query)) {
+			// no query params means a regular retrieve command
+			checkId(msg, respond, function() {
+				// calling wr entity manager
+				wr_entity.get(msg.args.params.id, function(result) {
+					let response = {};
+					if (result instanceof Array) {
+						response.success = true;
+						response.data = result;
+					} else {
+						response.success = false;
+						response.msg = result;
+					}
+					respond(null, response);
+				});  
+			});
+		} else {
+			// presence of query params, expecting a content-based search
+			let term = msg.args.query.search;
+			let response = {};
+			if(typeof msg.args.params.id !== 'undefined') {
+				response.success = false;
+				response.msg = 'concurrent use of id and search term'
+				respond(null, response);
+			} else {
+				if(msg.args.query.hasOwnProperty('search')) {
+					if(term === '') {
+						response.success = false;
+						response.msg = 'search param is empty';
+						respond(null, response);
+					} else 
+						wr_entity.search(term, function(result) {
+							if (result instanceof Array) {
+								response.success = true;
+								response.data = result;
+							} else {
+								response.success = false;
+								response.msg = result;
+							}
+							respond(null, response);
+						});
 				} else {
 					response.success = false;
-					response.msg = result;
+					response.msg = 'can only take "search" param';
+					respond(null, response);
 				}
-				respond(null, response);
-			});  
-		});
+			}
+		}
 	});
 
 	// handling update requests
@@ -94,7 +135,6 @@ module.exports = function WrService() {
 							err = 'invalid value for parameter state (can only be closed)';
 							valid = false;
 						} else {
-							// used to update the stats
 							action = "close";
 						}
 						break;
@@ -103,6 +143,7 @@ module.exports = function WrService() {
 						valid = false;
 				}
 			}
+
 			if (!valid) {
 				let errResponse = {};
 				errResponse.success = false;
