@@ -4,6 +4,9 @@ const seneca = require('seneca')();
 const entities = require('seneca-entity');
 seneca.use(entities);
 
+//required for file search
+const Minisearch = require('minisearch');
+
 // storage in local json files for reuse
 // to uncomment if required for usage
 /*const path = require('path');
@@ -43,6 +46,45 @@ exports.get = function(id, _callback) {
 		});
 	}
 };
+
+// extracts all the wr matching the id list
+function getEntitiesFromJson(json, _callback) {
+	let wr_entity = seneca.make$('wr_entity');
+	let IDs = [];
+	for (var wr in json) {
+		IDs.push(json[wr].id);
+	}
+	wr_entity.list$(function(err, entities){
+		let WRs = []
+		for (var entity in entities) {
+			if (IDs.includes(entities[entity].id)) 
+				WRs.push(entities[entity]);
+		}
+		_callback(WRs);
+	});
+}
+
+// handling retrieve of all elements containing the term
+exports.search = function(term, _callback) {
+	let wr_entity = seneca.make$('wr_entity');
+	let minisearch = new Minisearch({
+		fields : ['id', 'applicant', 'work', 'date', 'state'],
+		tokenize : (string, _fieldname) => string.split(/[^0-9a-zA-Z-]+/u)
+	});
+	wr_entity.list$(function(err, entities) {
+		minisearch.addAll(entities);
+		let resultSearch = minisearch.search(term);
+		if(err) {
+			_callback(err);
+		} else {
+			if (resultSearch.length === 0) {
+				_callback('search returned nothing')
+			} else {
+				getEntitiesFromJson(resultSearch, _callback);
+			}
+		}
+	});
+}
 
 // handling update element of the storage
 exports.update = function(id, fields, _callback) {
