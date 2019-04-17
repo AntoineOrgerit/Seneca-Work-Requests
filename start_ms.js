@@ -44,7 +44,21 @@ var seneca = Seneca()
 	.ready(() => {
 		var server = seneca.export('web/context')();
 		server.listen('3000', () => {
-			console.log('Server started on: 3000')
+			console.log('Server started on: 3000');
+			// launching tests in testing mode
+			if(global.gConfig.config_id === 'testing') {
+				console.log("Launching tests... Please wait.");
+				var exec = require('child_process').exec;
+				exec('node tests/client_iteration4.js', function callback(error, stdout, stderr){
+					if(error){
+						console.log("Tests failed with the following error: " + error);
+					} else {
+						console.log("Tests results:\n" + stdout);
+					}
+					seneca.close();
+					process.exit(0);
+				});
+			}
 		});
 	});
 	
@@ -52,5 +66,5 @@ var seneca = Seneca()
 process.on('SIGINT', function() {
 	console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
 	seneca.close();
-	process.exit(1);
+	process.exit(0);
 });
