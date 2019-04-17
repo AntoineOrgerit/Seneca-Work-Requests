@@ -9,23 +9,29 @@ module.exports = function WrService() {
 		if (typeof result === 'string' || result instanceof String) {
 			response.success = false;
 			response.msg = result;
+			respond(null, response);
 		} else {
 			response.success = true;
 			response.data = result;
 			if(action){
 				// updating stats
-				seneca.act({role: 'stats', cmd: 'set', action: action, applicant: result.applicant}, function(err, response){
+				seneca.act({role: 'stats', cmd: 'set', action: action, applicant: result.applicant}, function(err, res){
 					if(err){
-						console.log(err);
+						response.success = false;
+						response.msg = err;
+						respond(null, response);
 					} else {
-						if(response.success === false){
-							console.log(response.err);
+						if(res.success === false){
+							respond(null, res);
+						} else {
+							respond(null, response);
 						}
 					}
 				});
+			} else {
+				respond(null, response);
 			}
 		}
-		respond(null, response);
 	}
 
 	// used to check if a valid id has been given in the URL
@@ -171,23 +177,27 @@ module.exports = function WrService() {
 				if (typeof result === 'string' || result instanceof String) {
 					response.success = false;
 					response.msg = result;
+					respond(null, response);
 				} else {
 					response.success = true;
 					response.data = result;
 					for(var i in result){
 						// updating stats
-						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, response){
+						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, res){
 							if(err){
-								console.log(err);
+								response.success = false;
+								response.msg = err;
+								respond(null, response);
 							} else {
 								if(response.success === false){
-									console.log(response.err);
+									respond(null, res);
+								} else {
+									respond(null, response);
 								}
 							}
 						});
 					}
 				}
-				respond(null, response);
 			}); 
 		} else {
 			checkId(msg, respond, function() {

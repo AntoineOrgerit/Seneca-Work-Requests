@@ -4,10 +4,11 @@ const seneca = require('seneca')();
 const entities = require('seneca-entity');
 seneca.use(entities);
 
-// storage in local json files for reuse
-// to uncomment if required for usage
-/*const path = require('path');
-seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/stats')});*/
+// storage in local json files for reuse if in production
+const path = require('path');
+if(global.gConfig.config_id === 'production'){
+	seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/stats')});
+}
 
 // handling wr stats modifications
 exports.set = function(data, _callback) {

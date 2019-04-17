@@ -7,10 +7,11 @@ seneca.use(entities);
 //required for file search
 const Minisearch = require('minisearch');
 
-// storage in local json files for reuse
-// to uncomment if required for usage
-/*const path = require('path');
-seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});*/
+// storage in local json files for reuse if in production
+const path = require('path');
+if(global.gConfig.config_id === 'production'){
+	seneca.use('jsonfile-store', {folder: path.join(__dirname, '../db/wr')});
+}
 
 // handling creation of an element in the storage
 exports.create = function(entity, _callback) {
