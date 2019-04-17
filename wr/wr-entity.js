@@ -67,7 +67,7 @@ function getEntitiesFromJson(json, _callback) {
 // handling retrieve of all elements containing the term
 exports.search = function(term, _callback) {
 	let wr_entity = seneca.make$('wr_entity');
-	let minisearch = new Minisearch({fields : ['id', 'role', 'cmd', 'applicant', 'work', 'date', 'state']})
+	let minisearch = new Minisearch({fields : ['applicant', 'work', 'date', 'state']})
 	wr_entity.list$(function(err, entities) {
 		minisearch.addAll(entities);
 		let resultSearch = minisearch.search(term);

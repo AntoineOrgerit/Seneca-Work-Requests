@@ -367,6 +367,7 @@ lab.experiment('Work Request application -', () => {
         expect(result.data.stats_wr_closed).to.be.equals(1);
     });
 
+    // testing a work search term that includes both the WRs
     lab.test('search w/ search term: ' + 'PC', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'PC');
         expect(result.success).to.be.true();
@@ -374,28 +375,62 @@ lab.experiment('Work Request application -', () => {
         expect([paulWR, jacquesWR]).to.include(result.data);
     });
 
+    // testing a work search term that includes only paul's WR
     lab.test('search w/ search term: ' + 'reinstall', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'reinstall');
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([paulWR]);
     });
 
+    // testing a work search term that includes only jacques's WR
     lab.test('search w/ search term: ' + 'installation', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'installation');
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([jacquesWR]);
     });
 
+    // testing an invalid parameter
     lab.test('search w/ invalid term', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?foo=' + 'bar');
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('can only take "search" param');
     });
 
+    // testing an empty search term
     lab.test('search w/ empty search param', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + '');
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('search param is empty');
     });
+
+    // testing an applicant search term
+    lab.test('search w/ applicant search term: ' + 'paul', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'paul');
+        expect(result.success).to.be.true();
+        expect(result.data).to.be.equals([paulWR]);
+    });
+/*
+    // testing a date search term
+    lab.test('search w/ date search term: ' + '25-04-2019', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?search=' + '25-04-2019');
+        expect(result.success).to.be.true();
+        expect(result.data).to.be.equals([paulWR]);
+    });
+*/
+    // testing a state search term
+    lab.test('search w/ state search term: ' + 'closed', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'closed');
+        expect(result.success).to.be.true();
+        expect(result.data).to.include([paulWR, jacquesWR]);
+        expect([paulWR, jacquesWR]).to.include(result.data);
+    });
+
+    // testing a search term that is not in the DB
+    lab.test('search w/ state search term: ' + 'open', async () => {
+        const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'open');
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals('search returned nothing');
+    });
+
 });
 
