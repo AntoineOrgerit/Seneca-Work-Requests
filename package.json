@@ -1,29 +1,30 @@
 {
   "name": "projet_seneca",
   "version": "1.0.0",
-  "description": "",
+  "description": "A micro-service project",
   "main": "start_ms.js",
   "scripts": {
-    "start": "node start_ms.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node start_ms.js --seneca.log.info",
+    "test": "node start_ms.js --seneca.log.info --test"
   },
   "repository": {
     "type": "git",
     "url": "https://gitlab.univ-lr.fr/aorgerit/projet_seneca.git"
   },
-  "author": "",
+  "authors": "Antoine Orgerit and François Gréau",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
     "code": "^5.2.4",
     "express": "^4.16.4",
     "lab": "^18.0.2",
+    "lodash": "^4.17.11",
+    "minimist": "^1.2.0",
     "minisearch": "^1.2.1",
     "restify-clients": "^2.6.4",
     "seneca": "^3.8.4",
     "seneca-entity": "^3.3.0",
     "seneca-jsonfile-store": "^1.1.0",
-    "seneca-repl": "^1.2.0",
     "seneca-web": "^2.2.1",
     "seneca-web-adapter-express": "^1.1.2"
   }
