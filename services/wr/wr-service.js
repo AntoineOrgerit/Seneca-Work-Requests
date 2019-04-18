@@ -116,16 +116,21 @@ module.exports = function WrService() {
 
 	// handling creation requests
 	seneca.add('role:wr, cmd:create', function(msg, respond) {
-		let entity = {};
-		entity.applicant = msg.args.body.applicant;
-		entity.work = msg.args.body.work;
-		if (msg.args.body.date != null) {
-			entity.date = msg.args.body.date;
+		// preventing creation with incomplete body content
+		if (msg.args.body.applicant == null || msg.args.body.work == null) {
+			sendUniqueResult("can't create without providing both applicant and work descriptions", null, respond);
+		} else {
+			let entity = {};
+			entity.applicant = msg.args.body.applicant;
+			entity.work = msg.args.body.work;	
+			if (msg.args.body.date != null) {
+				entity.date = msg.args.body.date;
+			}
+			// calling wr entity manager
+			wr_entity.create(entity, function(result) {
+				sendUniqueResult(result, 'create', respond);
+			});
 		}
-		// calling wr entity manager
-		wr_entity.create(entity, function(result) {
-			sendUniqueResult(result, 'create', respond);
-		});
 	});
 
 	// handling retrieve requests

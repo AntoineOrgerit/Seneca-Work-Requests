@@ -31,6 +31,14 @@ let jacquesWR = {
     work: "PC installation",
 	date: "16-10-2019"
 };
+let noApplicantWR = {
+    work: "hand-free working",
+	date: "16-10-2019"
+};
+let noWorkWR = {
+    applicant: "jacques",
+	date: "16-10-2019"
+};
 
 // to make asynchronous calls
 function makePromiseRequest(request, route, arg) {
@@ -60,6 +68,30 @@ lab.experiment('Work Request application -', () => {
         expect(result.data.id).to.not.be.undefined();
         expect(result.data.state).to.be.equals('created');
         paulWR = result.data;
+    });
+    
+    // testing creation without body contents
+    lab.test('Creating a wr without any description', async () => {
+        const result = await makePromiseRequest(client.post, '/api/wr');
+        expect(result).to.not.be.null();
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals("can't create without providing both applicant and work descriptions");
+    });
+
+    // testing creation without applicant
+    lab.test('Creating a wr without applicant', async () => {
+        const result = await makePromiseRequest(client.post, '/api/wr', noApplicantWR);
+        expect(result).to.not.be.null();
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals("can't create without providing both applicant and work descriptions");
+    });
+
+    // testing creation witout work
+    lab.test('Creating a wr without work', async () => {
+        const result = await makePromiseRequest(client.post, '/api/wr', noWorkWR);
+        expect(result).to.not.be.null();
+        expect(result.success).to.be.false();
+        expect(result.msg).to.be.equals("can't create without providing both applicant and work descriptions");
     });
 
 	// testing retrieve of Paul
