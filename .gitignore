@@ -102,3 +102,4 @@ typings/
 
 # Project Specific #
 db/
+out.log

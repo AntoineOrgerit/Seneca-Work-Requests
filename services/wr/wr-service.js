@@ -33,29 +33,84 @@ module.exports = function WrService() {
 			}
 		}
 	}
+	
+	// used to send an array result (i.e. a set of wr)
+	function sendArrayResult(result, action, respond) {
+		let response = {};
+		// checking if it's an error message or not
+		if (result instanceof Array) {
+			response.success = true;
+			response.data = result;
+			if(action) {
+				// updating stats
+				let promises = [];
+				let promise;
+				for(let i in result){
+					// updating stats
+					promise = new Promise(function(resolve) {
+						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, res){
+							if(err){
+								resolve(err);
+							} else {
+								if(response.success === false){
+									resolve(res);
+								} else {
+									resolve(null);
+								}
+							}
+						});
+					});
+					promises.push(promise);
+				}
+				Promise.all(promises).then(function(values) {
+					// checking if updates went fine
+					let errors = [];
+					for(let result in values){
+						if(values[result] !== null){
+							errors.push(values[result]);
+						}
+					}
+					if(errors.length === 0){
+						respond(null, response);
+					} else {
+						response.success = false;
+						response.msg = "Stats update returned the following error(s): " + errors;
+						respond(null, response);
+					}
+				});
+			} else {
+				respond(null, response);
+			}
+		} else {
+			response.success = false;
+			response.msg = result;
+			respond(null, response);
+		}
+	}
 
 	// used to check if a valid id has been given in the URL
 	function checkId(msg, respond, _callback) {
-		let err, valid = true;
+		let valid = true;
 		if(!/^([a-zA-Z0-9]{6,})$/.test(msg.args.params.id)){
-			err = 'invalid id';
 			valid = false;
 		}
 		if (!valid) {
-			let errResponse = {};
-			errResponse.success = false;
-			errResponse.msg = err;
-			errResponse.data = '';
-			respond(null, errResponse);
+			let response = {};
+			response.success = false;
+			response.msg = 'invalid id';
+			respond(null, response);
 			return;
 		}
 		_callback();
 	}
 
-	function isJsonEmpty(jsonObject) {
-		for (let key in jsonObject) 
-			if (jsonObject.hasOwnProperty(key))
+	// used to check if there is a query in the request
+	function isQueryEmpty(query) {
+		for (let key in query) {
+			if (query.hasOwnProperty(key)) {
 				return false;
+			}
+		}
 		return true;
 	}
 
@@ -67,7 +122,6 @@ module.exports = function WrService() {
 		if (msg.args.body.date != null) {
 			entity.date = msg.args.body.date;
 		}
-
 		// calling wr entity manager
 		wr_entity.create(entity, function(result) {
 			sendUniqueResult(result, 'create', respond);
@@ -76,51 +130,42 @@ module.exports = function WrService() {
 
 	// handling retrieve requests
 	seneca.add('role:wr, cmd:retrieve', function(msg, respond) {
-		if (isJsonEmpty(msg.args.query)) {
+		// checking if we have a query
+		if (isQueryEmpty(msg.args.query)) {
 			// no query params means a regular retrieve command
 			checkId(msg, respond, function() {
-				// calling wr entity manager
-				wr_entity.get(msg.args.params.id, function(result) {
-					let response = {};
-					if (result instanceof Array) {
-						response.success = true;
-						response.data = result;
-					} else {
-						response.success = false;
-						response.msg = result;
-					}
-					respond(null, response);
-				});  
+				if(typeof msg.args.params.id === 'undefined') {
+					// calling wr entity manager
+					wr_entity.getAll(function(result) {
+						sendArrayResult(result, null, respond);
+					});
+				} else {
+					// calling wr entity manager
+					wr_entity.get(msg.args.params.id, function(result) {
+						sendArrayResult(result, null, respond);
+					}); 
+				}
 			});
 		} else {
 			// presence of query params, expecting a content-based search
-			let term = msg.args.query.search;
-			let response = {};
 			if(typeof msg.args.params.id !== 'undefined') {
-				response.success = false;
-				response.msg = 'concurrent use of id and search term'
-				respond(null, response);
+				// id cannot be sent with a query
+				sendUniqueResult('concurrent use of id and search term', null, respond);
 			} else {
+				// checking the param of the query that has to be 'search'
 				if(msg.args.query.hasOwnProperty('search')) {
+					// checking if the 'search' param has a value
+					let term = msg.args.query.search;
 					if(term === '') {
-						response.success = false;
-						response.msg = 'search param is empty';
-						respond(null, response);
-					} else 
+						sendUniqueResult('search param is empty', null, respond);
+					} else {
+						// searching
 						wr_entity.search(term, function(result) {
-							if (result instanceof Array) {
-								response.success = true;
-								response.data = result;
-							} else {
-								response.success = false;
-								response.msg = result;
-							}
-							respond(null, response);
+							sendArrayResult(result, null, respond);
 						});
+					}
 				} else {
-					response.success = false;
-					response.msg = 'can only take "search" param';
-					respond(null, response);
+					sendUniqueResult('can only take "search" param', null, respond);
 				}
 			}
 		}
@@ -149,7 +194,6 @@ module.exports = function WrService() {
 						valid = false;
 				}
 			}
-
 			if (!valid) {
 				let errResponse = {};
 				errResponse.success = false;
@@ -158,7 +202,6 @@ module.exports = function WrService() {
 				respond(null, errResponse);
 				return;
 			}
-
 			// calling wr entity manager
 			wr_entity.update(msg.args.params.id, msg.args.body, function(result) {
 				sendUniqueResult(result, action, respond);
@@ -171,33 +214,8 @@ module.exports = function WrService() {
 		// checking if we want to delete many or one wr
 		if(typeof msg.args.params.id === 'undefined') {
 			// calling wr entity manager
-			wr_entity.delete(undefined, function(result) {
-				let response = {};
-				// checking if the result is not an error message
-				if (typeof result === 'string' || result instanceof String) {
-					response.success = false;
-					response.msg = result;
-					respond(null, response);
-				} else {
-					response.success = true;
-					response.data = result;
-					for(var i in result){
-						// updating stats
-						seneca.act({role: 'stats', cmd: 'set', action: "delete", applicant: result[i].applicant}, function(err, res){
-							if(err){
-								response.success = false;
-								response.msg = err;
-								respond(null, response);
-							} else {
-								if(response.success === false){
-									respond(null, res);
-								} else {
-									respond(null, response);
-								}
-							}
-						});
-					}
-				}
+			wr_entity.deleteAll(function(result) {
+				sendArrayResult(result, 'delete', respond);
 			}); 
 		} else {
 			checkId(msg, respond, function() {
