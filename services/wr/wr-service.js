@@ -118,9 +118,8 @@ module.exports = function WrService() {
 	seneca.add('role:wr, cmd:create', function(msg, respond) {
 		// preventing creation with incomplete body content
 		if (msg.args.body.applicant == null || msg.args.body.work == null) {
-			respond(null, {"success":false, "msg":"can't create without providing both applicant and work descriptions"})
+			sendUniqueResult("can't create without providing both applicant and work descriptions", null, respond);
 		} else {
-		
 			let entity = {};
 			entity.applicant = msg.args.body.applicant;
 			entity.work = msg.args.body.work;	
@@ -131,7 +130,6 @@ module.exports = function WrService() {
 			wr_entity.create(entity, function(result) {
 				sendUniqueResult(result, 'create', respond);
 			});
-
 		}
 	});
 

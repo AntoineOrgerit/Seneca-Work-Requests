@@ -443,21 +443,21 @@ lab.experiment('Work Request application -', () => {
     });
 
     // testing an applicant search term
-    lab.test('search w/ applicant search term: ' + 'paul', async () => {
+    lab.test('search w/ applicant search term: paul', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'paul');
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([paulWR]);
     });
 
     // testing a date search term
-    lab.test('search w/ date search term: ' + '25-04-2019', async () => {
+    lab.test('search w/ date search term: 25-04-2019', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + '25-04-2019');
         expect(result.success).to.be.true();
         expect(result.data).to.be.equals([paulWR]);
     });
 
     // testing a state search term
-    lab.test('search w/ state search term: ' + 'closed', async () => {
+    lab.test('search w/ state search term: closed', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'closed');
         expect(result.success).to.be.true();
         expect(result.data).to.include([paulWR, jacquesWR]);
@@ -465,7 +465,7 @@ lab.experiment('Work Request application -', () => {
     });
 
     // testing a search term that is not in the DB
-    lab.test('search w/ state search term: ' + 'open', async () => {
+    lab.test('search w/ state search term: open', async () => {
         const result = await makePromiseRequest(client.get, '/api/wr?search=' + 'open');
         expect(result.success).to.be.false();
         expect(result.msg).to.be.equals('search returned nothing');
