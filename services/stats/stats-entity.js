@@ -12,7 +12,7 @@ if(global.gConfig.config_id === 'production'){
 
 // used to create stats for an applicant
 function createStatsForApplicant(applicant, _callback){
-	var stats_entity = seneca.make$('stats_entity');
+	let stats_entity = seneca.make$('stats_entity');
 	let entity = {};
 	entity.applicant = applicant;
 	entity.stats_wr_created = 1;
@@ -30,7 +30,7 @@ function createStatsForApplicant(applicant, _callback){
 
 // used to updare stats for an applicant
 function updateStatsForApplicant(entity, action, _callback) {
-	var stats_entity = seneca.make$('stats_entity');
+	let stats_entity = seneca.make$('stats_entity');
 	switch (action) {
 		case 'create': 
 			entity.stats_wr_created = entity.stats_wr_created + 1;
@@ -74,7 +74,7 @@ function updateStatsForApplicant(entity, action, _callback) {
 
 // handling wr stats modifications
 exports.set = function(data, _callback) {
-	var stats_entity = seneca.make$('stats_entity');
+	let stats_entity = seneca.make$('stats_entity');
 	// checking if the stats for the applicant exist
 	stats_entity.list$({applicant: data.applicant}, function(err, entities) {
 		if(err) {
@@ -97,7 +97,7 @@ exports.set = function(data, _callback) {
 
 // handling retrieve of one applicant wr stats
 exports.get = function(applicant, _callback) {
-	var stats_entity = seneca.make$('stats_entity');
+	let stats_entity = seneca.make$('stats_entity');
 	stats_entity.list$({applicant: applicant}, function(err, entities) {
 		if(err) {
 			_callback(err);
@@ -110,7 +110,7 @@ exports.get = function(applicant, _callback) {
 
 // handling retrieve of global stats
 exports.getGlobal = function(_callback) {
-	var stats_entity = seneca.make$('stats_entity');
+	let stats_entity = seneca.make$('stats_entity');
 	stats_entity.list$(function(err, entities) {
 		if(err) {
 			_callback(err);
@@ -120,7 +120,7 @@ exports.getGlobal = function(_callback) {
 			stats.global_stats_wr_created = 0;
 			stats.global_stats_wr_opened = 0;
 			stats.global_stats_wr_closed = 0;
-			for(var i in entities){
+			for(let i in entities){
 				stats.global_stats_wr_created = stats.global_stats_wr_created + entities[i].stats_wr_created;
 				stats.global_stats_wr_opened = stats.global_stats_wr_opened + entities[i].stats_wr_opened;
 				stats.global_stats_wr_closed = stats.global_stats_wr_closed + entities[i].stats_wr_closed;
