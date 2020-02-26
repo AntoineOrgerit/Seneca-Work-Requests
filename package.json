@@ -22,7 +22,7 @@
     "minimist": "^1.2.0",
     "minisearch": "^1.2.1",
     "restify-clients": "^2.6.4",
-    "seneca": "^3.8.4",
+    "seneca": "^3.9.0",
     "seneca-entity": "^3.3.0",
     "seneca-jsonfile-store": "^1.1.0",
     "seneca-web": "^2.2.1",
